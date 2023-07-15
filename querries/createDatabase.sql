@@ -1,10 +1,42 @@
--- Table: public.employees
+-- Table: application.teams
 
--- DROP TABLE IF EXISTS public.employees;
+-- DROP TABLE IF EXISTS application.teams;
 
-CREATE TABLE IF NOT EXISTS public.employees
+CREATE TABLE IF NOT EXISTS application.teams
 (
-    employee_id integer NOT NULL DEFAULT nextval('employees_id_seq'::regclass),
+    team_id serial,
+    team_name character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    location character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT teams_pkey PRIMARY KEY (team_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS application.teams
+    OWNER to admin;
+-- Table: application.titles
+
+-- DROP TABLE IF EXISTS application.titles;
+
+CREATE TABLE IF NOT EXISTS application.titles
+(
+    title_id serial,
+    title_name character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT titles_pkey PRIMARY KEY (title_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS application.titles
+    OWNER to admin;
+
+-- Table: application.employees
+
+-- DROP TABLE IF EXISTS application.employees;
+
+CREATE TABLE IF NOT EXISTS application.employees
+(
+    employee_id serial,
     first_name character varying(30) COLLATE pg_catalog."default" NOT NULL,
     last_name character varying(30) COLLATE pg_catalog."default" NOT NULL,
     hire_date date NOT NULL,
@@ -14,12 +46,12 @@ CREATE TABLE IF NOT EXISTS public.employees
     team_id integer,
     CONSTRAINT employees_pkey PRIMARY KEY (employee_id),
     CONSTRAINT team_id FOREIGN KEY (team_id)
-        REFERENCES public.teams (team_id) MATCH SIMPLE
+        REFERENCES application.teams (team_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT title_id FOREIGN KEY (title_id)
-        REFERENCES public.titles (title_id) MATCH SIMPLE
+        REFERENCES application.titles (title_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
         NOT VALID
@@ -27,71 +59,42 @@ CREATE TABLE IF NOT EXISTS public.employees
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.employees
+ALTER TABLE IF EXISTS application.employees
     OWNER to admin;
 
-COMMENT ON CONSTRAINT team_id ON public.employees
+COMMENT ON CONSTRAINT team_id ON application.employees
     IS 'team_id foreign key';
-COMMENT ON CONSTRAINT title_id ON public.employees
+COMMENT ON CONSTRAINT title_id ON application.employees
     IS 'title_id_FK';
 -- Index: fki_team_id
 
--- DROP INDEX IF EXISTS public.fki_team_id;
+-- DROP INDEX IF EXISTS application.fki_team_id;
 
 CREATE INDEX IF NOT EXISTS fki_team_id
-    ON public.employees USING btree
+    ON application.employees USING btree
     (team_id ASC NULLS LAST)
     TABLESPACE pg_default;
 -- Index: fki_title_id
 
--- DROP INDEX IF EXISTS public.fki_title_id;
+-- DROP INDEX IF EXISTS application.fki_title_id;
 
 CREATE INDEX IF NOT EXISTS fki_title_id
-    ON public.employees USING btree
+    ON application.employees USING btree
     (title_id ASC NULLS LAST)
     TABLESPACE pg_default;
 
--- Table: public.hour_tracking
+-- Table: application.hour_tracking
 
--- DROP TABLE IF EXISTS public.hour_tracking;
+-- DROP TABLE IF EXISTS application.hour_tracking;
 
-CREATE TABLE IF NOT EXISTS public.hour_tracking
+
+-- Table: application.projects
+
+-- DROP TABLE IF EXISTS application.projects;
+
+CREATE TABLE IF NOT EXISTS application.projects
 (
-    hour_id integer NOT NULL DEFAULT nextval('hour_tracking_hour_id_seq'::regclass),
-    employee_id integer,
-    project_id integer,
-    total_hours numeric(5,3),
-    CONSTRAINT hour_tracking_pkey PRIMARY KEY (hour_id),
-    CONSTRAINT project_id FOREIGN KEY (project_id)
-        REFERENCES public.projects (project_id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
-        NOT VALID
-)
-
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.hour_tracking
-    OWNER to postgres;
-
-COMMENT ON CONSTRAINT project_id ON public.hour_tracking
-    IS 'project_id foreign key';
--- Index: fki_project_id
-
--- DROP INDEX IF EXISTS public.fki_project_id;
-
-CREATE INDEX IF NOT EXISTS fki_project_id
-    ON public.hour_tracking USING btree
-    (project_id ASC NULLS LAST)
-    TABLESPACE pg_default;
-
--- Table: public.projects
-
--- DROP TABLE IF EXISTS public.projects;
-
-CREATE TABLE IF NOT EXISTS public.projects
-(
-    project_id integer NOT NULL DEFAULT nextval('projects_project_id_seq'::regclass),
+    project_id serial,
     name character varying(30) COLLATE pg_catalog."default" NOT NULL,
     client character varying(30) COLLATE pg_catalog."default" NOT NULL,
     start_date date NOT NULL,
@@ -101,26 +104,26 @@ CREATE TABLE IF NOT EXISTS public.projects
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.projects
-    OWNER to postgres;
+ALTER TABLE IF EXISTS application.projects
+    OWNER to admin;
 
--- Table: public.team_project
+-- Table: application.team_project
 
--- DROP TABLE IF EXISTS public.team_project;
+-- DROP TABLE IF EXISTS application.team_project;
 
-CREATE TABLE IF NOT EXISTS public.team_project
+CREATE TABLE IF NOT EXISTS application.team_project
 (
-    team_project_id integer NOT NULL DEFAULT nextval('team_project_team_project_id_seq'::regclass),
+    team_project_id serial,
     team_id integer NOT NULL,
     project_id integer NOT NULL,
     CONSTRAINT team_project_pkey PRIMARY KEY (team_project_id),
     CONSTRAINT project_id FOREIGN KEY (project_id)
-        REFERENCES public.projects (project_id) MATCH SIMPLE
+        REFERENCES application.projects (project_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID,
     CONSTRAINT team_id FOREIGN KEY (team_id)
-        REFERENCES public.teams (team_id) MATCH SIMPLE
+        REFERENCES application.teams (team_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
         NOT VALID
@@ -128,43 +131,41 @@ CREATE TABLE IF NOT EXISTS public.team_project
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.team_project
-    OWNER to postgres;
+ALTER TABLE IF EXISTS application.team_project
+    OWNER to admin;
 
-COMMENT ON CONSTRAINT project_id ON public.team_project
+COMMENT ON CONSTRAINT project_id ON application.team_project
     IS 'project_id foreign key';
-COMMENT ON CONSTRAINT team_id ON public.team_project
+COMMENT ON CONSTRAINT team_id ON application.team_project
     IS 'team_id foreign key';
 
--- Table: public.teams
 
--- DROP TABLE IF EXISTS public.teams;
-
-CREATE TABLE IF NOT EXISTS public.teams
+CREATE TABLE IF NOT EXISTS application.hour_tracking
 (
-    team_id integer NOT NULL DEFAULT nextval('teams_team_id_seq'::regclass),
-    team_name character varying(30) COLLATE pg_catalog."default" NOT NULL,
-    location character varying(30) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT teams_pkey PRIMARY KEY (team_id)
+    hour_id serial,
+    employee_id integer,
+    project_id integer,
+    total_hours numeric(5,3),
+    CONSTRAINT hour_tracking_pkey PRIMARY KEY (hour_id),
+    CONSTRAINT project_id FOREIGN KEY (project_id)
+        REFERENCES application.projects (project_id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.teams
-    OWNER to postgres;
+ALTER TABLE IF EXISTS application.hour_tracking
+    OWNER to admin;
 
--- Table: public.titles
+COMMENT ON CONSTRAINT project_id ON application.hour_tracking
+    IS 'project_id foreign key';
+-- Index: fki_project_id
 
--- DROP TABLE IF EXISTS public.titles;
+-- DROP INDEX IF EXISTS application.fki_project_id;
 
-CREATE TABLE IF NOT EXISTS public.titles
-(
-    title_id integer NOT NULL DEFAULT nextval('titles_title_id_seq'::regclass),
-    title_name character varying COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT titles_pkey PRIMARY KEY (title_id)
-)
-
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.titles
-    OWNER to postgres;
+CREATE INDEX IF NOT EXISTS fki_project_id
+    ON application.hour_tracking USING btree
+    (project_id ASC NULLS LAST)
+    TABLESPACE pg_default;
